@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Player</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#1e3c72,#2a5298);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    margin:0;
+}
+
+.player{
+    background:white;
+    width:380px;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 0 15px rgba(0,0,0,0.3);
+    text-align:center;
+}
+
+h2{
+    margin-bottom:10px;
+}
+
+.song-info{
+    margin:15px 0;
+}
+
+#title{
+    color:#333;
+    margin:5px;
+}
+
+#artist{
+    color:#666;
+}
+
+.controls button{
+    padding:10px 15px;
+    margin:8px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.controls button:hover{
+    background:#ddd;
+}
+
+#progress{
+    width:100%;
+}
+
+.volume{
+    margin-top:10px;
+}
+
+#playlist{
+    list-style:none;
+    padding:0;
+    margin-top:15px;
+    text-align:left;
+}
+
+#playlist li{
+    padding:8px;
+    border-bottom:1px solid #ddd;
+    cursor:pointer;
+}
+
+#playlist li:hover{
+    background:#f2f2f2;
+}
+</style>
+</head>
+
+<body>
+
+<div class="player">
+
+    <h2>🎵 Music Player</h2>
+
+    <div class="song-info">
+        <h3 id="title">Shape of You</h3>
+        <p id="artist">Ed Sheeran</p>
+    </div>
+
+    <audio id="audio"></audio>
+
+    <input type="range" id="progress" value="0">
+
+    <div>
+        <span id="currentTime">0:00</span>
+        /
+        <span id="duration">0:00</span>
+    </div>
+
+    <div class="controls">
+        <button onclick="prevSong()">⏮</button>
+        <button onclick="playPause()">▶ / ⏸</button>
+        <button onclick="nextSong()">⏭</button>
+    </div>
+
+    <div class="volume">
+        Volume:
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+    </div>
+
+    <h3>Playlist</h3>
+    <ul id="playlist"></ul>
+
+</div>
+
+<script>
+
+const songs = [
+{
+title:"Demo Song",
+artist:"SoundHelix",
+src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+},
+{
+    title: "Summer Walk",
+    artist: "Pixabay Music",
+    src: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3"
+}
+];
+
+let currentSong = 0;
+
+const audio = document.getElementById("audio");
+const title = document.getElementById("title");
+const artist = document.getElementById("artist");
+const progress = document.getElementById("progress");
+const volume = document.getElementById("volume");
+const currentTime = document.getElementById("currentTime");
+const duration = document.getElementById("duration");
+const playlist = document.getElementById("playlist");
+
+function loadSong(index){
+    audio.src = songs[index].src;
+    title.innerText = songs[index].title;
+    artist.innerText = songs[index].artist;
+}
+
+function playPause(){
+    if(audio.paused){
+        audio.play()
+         .then(() =>
+         console.log("playing"))
+         .catch(err =>
+         console.log(err));
+        }else{
+        audio.pause();
+    }
+}
+
+function nextSong(){
+    currentSong = (currentSong + 1) % songs.length;
+    loadSong(currentSong);
+    audio.play();
+}
+
+function prevSong(){
+    currentSong = (currentSong - 1 + songs.length) % songs.length;
+    loadSong(currentSong);
+    audio.play();
+}
+
+audio.addEventListener("timeupdate", () => {
+    progress.max = audio.duration;
+    progress.value = audio.currentTime;
+
+    currentTime.innerText = formatTime(audio.currentTime);
+    duration.innerText = formatTime(audio.duration);
+});
+
+progress.addEventListener("input", () => {
+    audio.currentTime = progress.value;
+});
+
+volume.addEventListener("input", () => {
+    audio.volume = volume.value;
+});
+
+function formatTime(time){
+    if(isNaN(time)) return "0:00";
+
+    let min = Math.floor(time/60);
+    let sec = Math.floor(time%60);
+
+    if(sec < 10) sec = "0" + sec;
+
+    return min + ":" + sec;
+}
+
+audio.addEventListener("ended", nextSong);
+
+songs.forEach((song,index)=>{
+    let li = document.createElement("li");
+    li.innerText = song.title + " - " + song.artist;
+
+    li.onclick = () => {
+        currentSong = index;
+        loadSong(currentSong);
+        audio.play();
+    };
+
+    playlist.appendChild(li);
+});
+
+loadSong(0);
+
+</script>
+
+</body>
+</html>
